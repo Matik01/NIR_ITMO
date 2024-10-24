@@ -1,0 +1,4 @@
+center -5.279 -0.723 8.258
+size 40 40 40
+system-box 86.830 86.795 131.796
+bond complex.163.SG complex.170.SG

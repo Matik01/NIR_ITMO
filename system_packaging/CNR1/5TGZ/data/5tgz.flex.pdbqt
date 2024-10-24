@@ -1,0 +1,32 @@
+BEGIN_RES SER A 173
+REMARK  2 active torsions:
+REMARK  status: ('A' for Active; 'I' for Inactive)
+REMARK    1  A    between atoms: CA   and  CB  
+REMARK    2  A    between atoms: CB   and  OG  
+ROOT
+ATOM      1  CA  SER A 173      -4.540 -11.597  11.543  1.00127.03     0.292 C 
+ENDROOT
+BRANCH   1   2
+ATOM      2  CB  SER A 173      -4.003 -10.168  11.569  1.00131.20     0.194 C 
+BRANCH   2   3
+ATOM      3  OG  SER A 173      -4.647  -9.359  10.600  1.00137.49    -0.550 OA
+ATOM      4  HG  SER A 173      -4.313  -8.470  10.616  1.00  0.00     0.310 HD
+ENDBRANCH   2   3
+ENDBRANCH   1   2
+END_RES SER A 173
+BEGIN_RES SER A 383
+REMARK  2 active torsions:
+REMARK  status: ('A' for Active; 'I' for Inactive)
+REMARK    3  A    between atoms: CA   and  CB  
+REMARK    4  A    between atoms: CB   and  OG  
+ROOT
+ATOM      5  CA  SER A 383      -8.934   0.934   8.031  1.00 88.23     0.292 C 
+ENDROOT
+BRANCH   5   6
+ATOM      6  CB  SER A 383      -8.589   0.249   9.352  1.00 82.13     0.194 C 
+BRANCH   6   7
+ATOM      7  OG  SER A 383      -9.700  -0.467   9.860  1.00 85.59    -0.550 OA
+ATOM      8  HG  SER A 383      -9.485  -0.893  10.682  1.00  0.00     0.310 HD
+ENDBRANCH   6   7
+ENDBRANCH   5   6
+END_RES SER A 383
