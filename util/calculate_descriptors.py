@@ -73,15 +73,13 @@ def distance_function(eta: float, distance_ij: float, r_s: float) -> float:
 
 
 def angle_function(zeta: float, eta: float, cosine_teta: float,
-                   distance_ij: float, distance_jk: float, distance_ik: float) -> list:
-    angle_descriptors = []
-    for lambda_value in Constants.LAMBDA_VALUES:
-        g_angular = 2 ** (1 - zeta) * np.sum((1 + lambda_value * cosine_teta) ** zeta * np.exp(
-            -eta * (distance_ij ** 2 + distance_jk ** 2 + distance_ik ** 2)) * fc_cutoff(distance_ij) * fc_cutoff(
-            distance_jk) * fc_cutoff(distance_ik))
-        angle_descriptors.append(g_angular)
+                   distance_ij: float, distance_jk: float, distance_ik: float, lambda_value: float) -> list:
+    g_angular = 2 ** (1 - zeta) * np.sum((1 + lambda_value * cosine_teta) ** zeta * np.exp(
+        -eta * (distance_ij ** 2 + distance_jk ** 2 + distance_ik ** 2)) * fc_cutoff(distance_ij) * fc_cutoff(
+        distance_jk) * fc_cutoff(distance_ik))
 
-    return angle_descriptors
+    return g_angular
+
 
 def bps_compute(prot: Protein, ligand: Ligand) -> list:
     env_descriptors = list()
@@ -112,15 +110,16 @@ def bps_compute(prot: Protein, ligand: Ligand) -> list:
                 temp = distance_function(eta=eta, distance_ij=distance_ij, r_s=rs)
                 descriptors.append(temp)
 
-            for l in Constants.LAMBDA_VALUES:
+            for lambda_value in Constants.LAMBDA_VALUES:
                 for eta, zeta in product(Constants.ETA_VALUES, Constants.ZETA_VALUES):
                     temp = angle_function(zeta=zeta, eta=eta, cosine_teta=cosine_teta, distance_ij=distance_ij,
-                                          distance_ik=distance_ik, distance_jk=distance_jk)
+                                          distance_ik=distance_ik, distance_jk=distance_jk, lambda_value=lambda_value)
                     descriptors.append(temp)
             atom_type_list.append(descriptors)
 
         env_descriptors.append(atom_type_list)
     return env_descriptors
+
 
 if __name__ == '__main__':
     files = ['test_system.pdb']  # TO ADD: Directory reader
@@ -132,6 +131,7 @@ if __name__ == '__main__':
         ligand_list.append(mol)
         protein_list.append(prot)
 
-
     for prot, ligand in zip(protein_list, ligand_list):
-        bps_compute(prot=prot, ligand=ligand)
+        out = bps_compute(prot=prot, ligand=ligand)
+        out = np.array(out)
+        print(out.shape)
