@@ -4,6 +4,7 @@ from entity.constants import Constants
 from sklearn.neighbors import KDTree
 import numpy as np
 from itertools import product
+import pickle as pkl
 
 
 def read_pdb(filename: str) -> (Ligand, Protein):
@@ -83,12 +84,17 @@ def angle_function(zeta: float, eta: float, cosine_teta: float,
 
 def bps_compute(prot: Protein, ligand: Ligand) -> list:
     env_descriptors = list()
-
+    '''
+    Output structure by index:
+    0 - protein atom
+    1 - ligand atom
+    2 - calculated descriptors
+    '''
     for atom_char in prot.get_coords().keys():
         idx, distances = prot.get_kd_trees()[atom_char].query_radius(ligand.get_coords(),
                                                                      Constants.RC_CUTOFF_DISTANCE,
                                                                      return_distance=True)
-        atom_type_list = list()
+        descriptors_by_atom_id = list()
         for atom_id in range(ligand.get_coords().shape[0]):
             descriptors = list()
             env_coords = prot.get_coords()[atom_char][idx[atom_id], :]
@@ -107,7 +113,8 @@ def bps_compute(prot: Protein, ligand: Ligand) -> list:
                     print(f'Error not valid cosine: {result}')
 
             for eta, rs in product(Constants.ETA_VALUES, Constants.RS_VALUES):
-                temp = distance_function(eta=eta, distance_ij=distance_ij, r_s=rs)
+                temp = distance_function(eta=eta, distance_ij=distances[atom_id], r_s=rs)
+
                 descriptors.append(temp)
 
             for lambda_value in Constants.LAMBDA_VALUES:
@@ -115,9 +122,8 @@ def bps_compute(prot: Protein, ligand: Ligand) -> list:
                     temp = angle_function(zeta=zeta, eta=eta, cosine_teta=cosine_teta, distance_ij=distance_ij,
                                           distance_ik=distance_ik, distance_jk=distance_jk, lambda_value=lambda_value)
                     descriptors.append(temp)
-            atom_type_list.append(descriptors)
-
-        env_descriptors.append(atom_type_list)
+            descriptors_by_atom_id.append(descriptors)
+        env_descriptors.append(descriptors_by_atom_id)
     return env_descriptors
 
 
@@ -134,4 +140,4 @@ if __name__ == '__main__':
     for prot, ligand in zip(protein_list, ligand_list):
         out = bps_compute(prot=prot, ligand=ligand)
         out = np.array(out)
-        print(out.shape)
+        np.savetxt('out.txt', out[0], delimiter=',')
