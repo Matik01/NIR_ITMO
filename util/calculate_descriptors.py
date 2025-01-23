@@ -13,7 +13,7 @@ def read_pdb(filename: str) -> (Ligand, Protein):
         print(f'Reading file: {filename}')
         pdb_data = f_in.readlines()
     protein_data = [line.rstrip('\n') for line in pdb_data if line[17:20] in Constants.AMINOACID_LIST]
-    ligand_data = [line.rstrip('\n') for line in pdb_data if line[17:20] == Constants.LIGAND]
+    ligand_data = [line.rstrip('\n') for line in pdb_data if line[17:20] == Constants.LIGAND_IDENTIFIER]
 
     return process_ligand(ligand_data), process_protein(protein_data)
 
@@ -86,8 +86,8 @@ def bps_compute(prot: Protein, ligand: Ligand) -> list:
     env_descriptors = list()
     '''
     Output structure by index:
-    0 - protein atom
-    1 - ligand atom
+    0 - ligand atom
+    1 - protein atom
     2 - calculated descriptors
     '''
     for atom_char in prot.get_coords().keys():
@@ -137,7 +137,16 @@ if __name__ == '__main__':
         ligand_list.append(mol)
         protein_list.append(prot)
 
+
     for prot, ligand in zip(protein_list, ligand_list):
-        out = bps_compute(prot=prot, ligand=ligand)
-        out = np.array(out)
-        np.savetxt('out.txt', out[0], delimiter=',')
+        bps_out = bps_compute(prot=prot, ligand=ligand)
+        bps_out = np.transpose(np.array(bps_out), (1,0,2))
+
+        ligand_one_hot_encode = np.zeros((len(ligand.get_coords()), len(Constants.LIGAND_ATOM_TYPES)))
+
+        for i in range(ligand.get_coords().shape[0]):
+            ligand_one_hot_encode[i, Constants.LIGAND_ATOM_TYPES.index(ligand.get_atom_types()[i])] += 1.
+
+        bps_out = bps_out.reshape(bps_out.shape[0], bps_out.shape[1] * bps_out.shape[2])
+        bps_out = np.concatenate((bps_out, ligand_one_hot_encode), axis=1).astype(np.float32)
+        np.savetxt('out.txt', bps_out, delimiter=',')
