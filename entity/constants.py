@@ -12,9 +12,13 @@ class Constants:
         "TYR", "VAL", "HIE", "HID", "HIP", "CYX"
     )
 
-    LIGAND: str = "SUS"
-    RC_CUTOFF_DISTANCE: int = 12
-    STANDARD_ATOMS_MAP =  {"C": 0, "O": 1, "N": 2, "H": 3, "S": 4, "P": 4}
+    LIGAND_ATOM_TYPES: tuple = (
+        'C', 'O', 'N', 'S', 'P', 'F', 'CL', 'BR', 'I', 'H'
+    )
+
+    LIGAND_IDENTIFIER: str = "SUS"
+    RC_CUTOFF_DISTANCE: int = 16.0
+    STANDARD_ATOMS_MAP = {"C": 0, "O": 1, "N": 2, "H": 3, "S": 4, "P": 4}
     '''
     Value lists for BPS function
     '''
@@ -22,4 +26,3 @@ class Constants:
     ZETA_VALUES: tuple = (1., 2., 4., 8.)
     ETA_VALUES: tuple = (0.008, 0.04, 0.2, 1.)
     RS_VALUES: tuple = (2., 4., 6., 8., 10.)
-
