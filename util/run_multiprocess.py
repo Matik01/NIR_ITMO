@@ -31,7 +31,7 @@ if __name__ == '__main__':
         files = [os.path.join(args.pdb_path, pdb_file) for pdb_file in os.listdir(args.pdb_path) if
                  pdb_file.endswith('.pdb') and pdb_file.startswith(args.pdb_prefix)]
 
-    with ThreadPoolExecutor(max_workers=args.n_threads) as executor:
+    with ThreadPoolExecutor(max_workers=args.n_threads) as executor:        # TODO: Better use ProcessPoolExecutor
         futures = {executor.submit(create_bps_calculations, file) for file in files}
 
         results: list[tuple] = []
