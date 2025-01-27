@@ -15,7 +15,7 @@ class BPS:
 
     def main(self) -> tuple:
         logging.basicConfig(filename="descriptors.log", level=logging.ERROR)
-
+        logging.info(f'Reading {self._file}')
         ligand: Ligand
         protein: Protein
 
@@ -42,7 +42,7 @@ class BPS:
         return self._process_ligand(ligand_data), self._process_protein(protein_data)
 
     def _process_ligand(self, ligand_data: list) -> Ligand:
-        coords = np.array([]).reshape((0, 3)).astype(float)
+        coords = np.array([]).reshape((0, 3)).astype(np.float32)
         atom_types = []
         '''
         Getting atom types and coords for each
@@ -53,21 +53,27 @@ class BPS:
             x = item[32:38]
             y = item[40:46]
             z = item[48:54]
-            coords = np.vstack([coords, [x, y, z]]).astype(float)
+            coords = np.vstack([coords, [x, y, z]]).astype(np.float32)
+        logging.info(f'Got ligand: {self._file}')
         return Ligand(atom_types=atom_types, coords=coords)
 
     def _process_protein(self, protein_data: list) -> Protein:
-        coords = {atom_char: np.array([]).reshape((0, 3)).astype(float) for atom_char in
+        coords = {atom_char: np.array([]).reshape((0, 3)).astype(np.float32) for atom_char in
                   Constants.STANDARD_ATOMS_MAP.keys()}
         atom_types = list()
         for item in protein_data:
             atom_char = item[76:78].strip()
+
+            if not atom_char:
+                print(f"Warning: Skipping invalid entry with empty atom_char: {item}")
+                continue
+
             if atom_char not in atom_types:
                 atom_types.append(atom_char)
             x = item[32:38]
             y = item[40:46]
             z = item[48:54]
-            coords[atom_char] = np.vstack([coords[atom_char], [x, y, z]]).astype(float)
+            coords[atom_char] = np.vstack([coords[atom_char], [x, y, z]]).astype(np.float32)
 
         kd_trees = dict()
         for atom_char in atom_types:
@@ -83,7 +89,7 @@ class BPS:
             for key in keys_to_delete:
                 logger.info(f'Deleting atom char: {key}')
                 del coords[key]
-
+        logging.info(f'Got ligand: {self._file}')
         return Protein(atom_types=atom_types, coords=coords, kd_trees=kd_trees)
 
     def _fc_cutoff(self, r_distance: float) -> float:
@@ -143,4 +149,5 @@ class BPS:
                         descriptors.append(temp)
                 descriptors_by_atom_id.append(descriptors)
             env_descriptors.append(descriptors_by_atom_id)
+        logging.info(f'Finished BPS compute: {self._file}')
         return env_descriptors
