@@ -16,6 +16,7 @@ class BPS:
     def main(self) -> tuple:
         logging.basicConfig(filename="descriptors.log", level=logging.ERROR)
         logging.info(f'Reading {self._file}')
+
         ligand: Ligand
         protein: Protein
 
@@ -29,6 +30,7 @@ class BPS:
 
         bps_out = bps_out.reshape(bps_out.shape[0], bps_out.shape[1] * bps_out.shape[2])
         bps_out = np.concatenate((ligand_one_hot_encode, bps_out), axis=1).astype(np.float32)
+
         return self._file, bps_out
 
     def _read_pdb(self, filename: str) -> (Ligand, Protein):
@@ -42,7 +44,7 @@ class BPS:
         return self._process_ligand(ligand_data), self._process_protein(protein_data)
 
     def _process_ligand(self, ligand_data: list) -> Ligand:
-        coords = np.array([]).reshape((0, 3)).astype(np.float32)
+        coords = np.array([]).reshape((0, 3)).astype(np.float64)
         atom_types = []
         '''
         Getting atom types and coords for each
@@ -53,12 +55,12 @@ class BPS:
             x = item[32:38]
             y = item[40:46]
             z = item[48:54]
-            coords = np.vstack([coords, [x, y, z]]).astype(np.float32)
+            coords = np.vstack([coords, [x, y, z]]).astype(np.float64)
         logging.info(f'Got ligand: {self._file}')
         return Ligand(atom_types=atom_types, coords=coords)
 
     def _process_protein(self, protein_data: list) -> Protein:
-        coords = {atom_char: np.array([]).reshape((0, 3)).astype(np.float32) for atom_char in
+        coords = {atom_char: np.array([]).reshape((0, 3)).astype(np.float64) for atom_char in
                   Constants.STANDARD_ATOMS_MAP.keys()}
         atom_types = list()
         for item in protein_data:
@@ -73,7 +75,7 @@ class BPS:
             x = item[32:38]
             y = item[40:46]
             z = item[48:54]
-            coords[atom_char] = np.vstack([coords[atom_char], [x, y, z]]).astype(np.float32)
+            coords[atom_char] = np.vstack([coords[atom_char], [x, y, z]]).astype(np.float64)
 
         kd_trees = dict()
         for atom_char in atom_types:
@@ -89,7 +91,9 @@ class BPS:
             for key in keys_to_delete:
                 logger.info(f'Deleting atom char: {key}')
                 del coords[key]
+
         logging.info(f'Got ligand: {self._file}')
+
         return Protein(atom_types=atom_types, coords=coords, kd_trees=kd_trees)
 
     def _fc_cutoff(self, r_distance: float) -> float:
@@ -137,7 +141,7 @@ class BPS:
                         logger.error(f'Error not valid cosine: {result}')
                         return list()
 
-                for eta, rs in product(Constants.ETA_VALUES, Constants.RS_VALUES):
+                for rs, eta in product(Constants.RS_VALUES, Constants.ETA_VALUES):
                     temp = self._radial_distribution_function(eta=eta, distance_ij=distances[atom_id], r_s=rs)
                     descriptors.append(temp)
 
@@ -147,7 +151,11 @@ class BPS:
                                                     distance_ij=distance_ij, distance_jk=distance_jk,
                                                     distance_ik=distance_ik, lambda_value=lambda_value)
                         descriptors.append(temp)
+
                 descriptors_by_atom_id.append(descriptors)
+
             env_descriptors.append(descriptors_by_atom_id)
+
         logging.info(f'Finished BPS compute: {self._file}')
+
         return env_descriptors

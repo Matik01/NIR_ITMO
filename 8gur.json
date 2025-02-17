@@ -1,0 +1,6 @@
+{
+	"pdb_path": "./util"
+	"n_cpu": 4
+	"output_file": "output_test.h5"
+	"pdb_prefix": null
+}
